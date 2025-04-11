@@ -10,7 +10,7 @@
 <% data.forEach(group => { -%>
 - [<%= group.name %>](#<%= urlEncode(group.name) -%>)
 <% group.subs.forEach(sub => { -%>
-  - [<%= sub.title %>](#<%= urlEncode(group.name ? `${sub.title} (${group.name})` : sub.title) %>)
+  - [[#<%- group.name ? `${sub.title}<span style="font-size: 0px"> (${group.name})</span>` : sub.title %>|<%- sub.title %>]]
 <% })}) -%>
 
 ___

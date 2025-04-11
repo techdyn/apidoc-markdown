@@ -10,9 +10,9 @@
 # Table of contents
 
 <% data.forEach(group => { -%>
-- [<%= group.name %>](#<%= toLink(group.name) -%>)
+- [<%= group.name %>](#<%= toLower(toLink(group.name)) -%>)
 <% group.subs.forEach(sub => { -%>
-  - [<%= sub.title %>](#<%= toLink(sub.title) %>)
+  - [<%= sub.title %>](#<%= toLower(toLink(group.name ? `${sub.title} (${group.name})` : sub.title)) %>)
 <% })}) -%>
 
 ___
@@ -25,7 +25,7 @@ ___
 # <a name='<%= toLink(group.name) %>'></a> <%= group.name %>
 <% group.subs.forEach(sub => { -%>
 
-## <a name='<%= toLink(sub.title) %>'></a> <%= sub.title %>
+## <a name='<%= toLink(group.name ? `${sub.title} (${group.name})` : sub.title) %>'></a> <%= sub.title %>
 [Back to top](#top)
 
 <%- sub.description ? `${sub.description}\n\n` : '' -%>

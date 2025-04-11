@@ -117,5 +117,8 @@ export const templateUtils = {
    * @returns The valid linkable string
    */
   toLink: (str: string) => str.replace(/\s+/g, '-'),
-  urlEncode: (str: string) => encodeURIComponent(str)
+  urlEncode: (str: string) => encodeURIComponent(str),
+  urlDecode: (str: string) => decodeURIComponent(str),
+  toLower: (str: string) => str.toLowerCase(),
+  toUpper: (str: string) => str.toUpperCase()
 }
