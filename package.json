@@ -31,7 +31,8 @@
     "test": "tsc && ava",
     "test:ava": "ava",
     "test:gen-apidoc": "cd test/_apidoc && rm -rf out && apidoc -i src -o out",
-    "prepublishOnly": "tsc"
+    "prepublishOnly": "tsc",
+    "prepare": "npm run build"
   },
   "dependencies": {
     "apidoc-light": "^0.54.0",
