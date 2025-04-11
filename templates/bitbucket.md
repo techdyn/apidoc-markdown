@@ -107,6 +107,18 @@ _Size range: <%- body.size %>_<br><% } -%>
 _Allowed values: <%- body.allowedValues %>_<% } -%> |
 <% }) // foreach body -%>
 <% } // if body -%>
+<% if (sub.body && sub.body.examples && sub.body.examples.length) { -%>
+
+### Request body example
+<% sub.body.examples.forEach(example => { -%>
+
+#### Request body example - `<%= example.title %>`
+
+```<%= example.type %>
+<%- example.content %>
+```
+<% }) // foreach body example -%>
+<% } // if body.examples -%>
 <% if (sub.examples && sub.examples.length) { -%>
 
 ### Examples
