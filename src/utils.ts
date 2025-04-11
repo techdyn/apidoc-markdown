@@ -116,5 +116,6 @@ export const templateUtils = {
    * @param str Title to convert
    * @returns The valid linkable string
    */
-  toLink: (str: string) => str.replace(/\s+/g, '-')
+  toLink: (str: string) => str.replace(/\s+/g, '-'),
+  urlEncode: (str: string) => encodeURIComponent(str)
 }

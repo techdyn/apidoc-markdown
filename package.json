@@ -41,6 +41,9 @@
     "update-notifier": "^7.0.0",
     "yargs": "^17.7.2"
   },
+  "resolutions": {
+    "apidoc-light": "https://github.com/techdyn/apidoc-light.git"
+  },
   "devDependencies": {
     "@types/ejs": "^3.1.5",
     "@types/node": "^20.10.5",
