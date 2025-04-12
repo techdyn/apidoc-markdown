@@ -81,7 +81,30 @@ export const isInTemplatesDir = (name: string) => fs.readdir(TEMPLATES_PATH).the
 export const createDocOrThrow = (
   options: ConfigurationObjectCLI
 ): Pick<ConfigurationObject, 'apiDocProjectData' | 'apiDocApiData'> => {
-  const doc = createDoc({ ...options, src: options.input, markdown: false })
+  const doc = createDoc({ 
+    ...options, 
+    src: options.input,
+    markdown: {
+      config: {
+        breaks: true,
+        html: true,
+      },
+      rules: {},  // Empty rules object
+      plugins: [] // Empty plugins array
+      // rules: {
+      //   table_cell_content: function(tokens: any, idx: number) {
+      //     // Custom table cell handling
+      //   },
+      //   list_item: function(tokens: any, idx: number) {
+      //     // Custom list item handling
+      //   }
+      // },
+      // plugins: [
+      //   require('markdown-it-plugin'),
+      //   [require('markdown-it-anchor'), { option: 'value' }]
+      // ]
+    } 
+  })
   return {
     apiDocProjectData: doc.project,
     apiDocApiData: Object.values<any>(doc.data).filter(x => x.type)
