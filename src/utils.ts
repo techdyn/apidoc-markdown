@@ -89,20 +89,20 @@ export const createDocOrThrow = (
         breaks: true,
         html: true,
       },
-      rules: {},  // Empty rules object
-      plugins: [] // Empty plugins array
-      // rules: {
-      //   table_cell_content: function(tokens: any, idx: number) {
-      //     // Custom table cell handling
-      //   },
-      //   list_item: function(tokens: any, idx: number) {
-      //     // Custom list item handling
-      //   }
-      // },
-      // plugins: [
-      //   require('markdown-it-plugin'),
-      //   [require('markdown-it-anchor'), { option: 'value' }]
-      // ]
+      rules: {
+        // Override `fence` (for ``` blocks)
+        fence: function (tokens, idx) {
+          return tokens[idx].content + '\n';
+        },
+        // Override `code_inline` (for `inline code`)
+        code_inline: function (tokens, idx) {
+          return tokens[idx].content;
+        }
+      },
+      plugins: [
+        // require('markdown-it-plugin'),
+        // [require('markdown-it-anchor'), { option: 'value' }]
+      ]
     } 
   })
   return {
