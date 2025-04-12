@@ -1,16 +1,18 @@
+<a name="top"></a>
 # <%= project.name %> v<%= project.version %>
 
 <%= project.description %>
 <% if (header) { -%>
+
 <%- header %>
 <% } -%>
 
 # Table of contents
 
 <% data.forEach(group => { -%>
-- [<%= group.name %>](#<%= urlEncode(group.name) -%>)
+- [<%= group.name %>](#<%= toLower(toLink(group.name)) -%>)
 <% group.subs.forEach(sub => { -%>
-  - [<%= sub.title %>](#<%= urlEncode(group.name ? `${sub.title} (${group.name})` : sub.title) %>)
+  - [<%= sub.title %>](#<%= toLower(toLink(group.name ? `${sub.title} ${group.name}` : sub.title)) %>)
 <% })}) -%>
 
 ___
@@ -25,7 +27,7 @@ ___
 
 ## <%= sub.title %><% if (group.name) { -%><span style="font-size: 0px"> (<%= group.name %>)</span><% } -%>
 
-[Back to top](#<%= urlEncode(`${project.name} v${project.version}`) %>)
+[Back to top](#top)
 
 <%- sub.description ? `${sub.description}\n\n` : '' -%>
 ```
