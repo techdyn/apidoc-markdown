@@ -90,13 +90,36 @@ export const createDocOrThrow = (
         html: true,
       },
       rules: {
-        // Override `fence` (for ``` blocks)
-        fence: function (tokens, idx) {
-          return tokens[idx].content + '\n';
-        },
+        // // Override `fence` (for ``` blocks)
+        // fence: function (tokens, idx) {
+        //   return tokens[idx].content + '\n';
+        // },
         // Override `code_inline` (for `inline code`)
         code_inline: function (tokens, idx) {
           return tokens[idx].content;
+        },
+        // Strip <p> wrapper around code-only paragraphs
+        paragraph_open: function (tokens, idx, options, env, self) {
+          const contentToken = tokens[idx + 1];
+          const isSingleCode = contentToken &&
+                               contentToken.type === 'inline' &&
+                               contentToken.children &&
+                               contentToken.children.length === 1 &&
+                               contentToken.children[0].type === 'code_inline';
+
+          if (isSingleCode) return '';
+          return self.renderToken(tokens, idx, options);
+        },
+        paragraph_close: function (tokens, idx, options, env, self) {
+          const contentToken = tokens[idx - 1];
+          const isSingleCode = contentToken &&
+                               contentToken.type === 'inline' &&
+                               contentToken.children &&
+                               contentToken.children.length === 1 &&
+                               contentToken.children[0].type === 'code_inline';
+
+          if (isSingleCode) return '';
+          return self.renderToken(tokens, idx, options);
         }
       },
       plugins: [
