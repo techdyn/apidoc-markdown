@@ -81,7 +81,7 @@ export const isInTemplatesDir = (name: string) => fs.readdir(TEMPLATES_PATH).the
 export const createDocOrThrow = (
   options: ConfigurationObjectCLI
 ): Pick<ConfigurationObject, 'apiDocProjectData' | 'apiDocApiData'> => {
-  const doc = createDoc({ ...options, src: options.input })
+  const doc = createDoc({ ...options, src: options.input, markdown: false })
   return {
     apiDocProjectData: doc.project,
     apiDocApiData: Object.values<any>(doc.data).filter(x => x.type)

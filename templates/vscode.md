@@ -91,7 +91,7 @@ _Size range: <%- query.size %>_<br><% } -%>
 _Allowed values: <%- query.allowedValues %>_<% } -%> |
 <% }) // foreach query -%>
 <% } // if query -%>
-<% if (sub.body) { -%>
+<% if (sub.body && Array.isArray(sub.body)) { -%>
 
 ### Request Body
 
