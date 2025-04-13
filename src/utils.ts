@@ -99,7 +99,7 @@ export const createDocOrThrow = (
           return tokens[idx].content;
         },
         // Strip <p> wrapper around code-only paragraphs
-        paragraph_open: function (tokens, idx, options, env, self) {
+        paragraph_open: function (tokens, idx, options, self) {
           const contentToken = tokens[idx + 1];
           const isSingleCode = contentToken &&
                                contentToken.type === 'inline' &&
@@ -110,7 +110,7 @@ export const createDocOrThrow = (
           if (isSingleCode) return '';
           return self.renderToken(tokens, idx, options);
         },
-        paragraph_close: function (tokens, idx, options, env, self) {
+        paragraph_close: function (tokens, idx, options, self) {
           const contentToken = tokens[idx - 1];
           const isSingleCode = contentToken &&
                                contentToken.type === 'inline' &&
