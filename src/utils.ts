@@ -3,7 +3,7 @@ import fs from 'fs/promises'
 import path from 'path'
 import { createDoc } from 'apidoc-light'
 import type { ConfigurationObject, ConfigurationObjectCLI } from './types'
-import type { MarkdownRuleFunction, MarkdownOptions } from 'apidoc-light'
+import type { MarkdownOptions, MarkdownRuleFunction } from 'apidoc-light'
 
 export const TEMPLATES_PATH = path.resolve(__dirname, '..', 'templates')
 export const DEFAULT_TEMPLATE_PATH = path.resolve(TEMPLATES_PATH, 'default.md')
@@ -82,51 +82,55 @@ export const isInTemplatesDir = (name: string) => fs.readdir(TEMPLATES_PATH).the
 export const createDocOrThrow = (
   options: ConfigurationObjectCLI
 ): Pick<ConfigurationObject, 'apiDocProjectData' | 'apiDocApiData'> => {
-  // Create custom markdown options that bypass the type inconsistency
-  const markdownOpts: any = {
+  // Define markdown rule functions that conform to the MarkdownRuleFunction type
+  const rules: Record<string, MarkdownRuleFunction> = {
+    // Override `code_inline` (for `inline code`)
+    code_inline: (tokens: any[], idx: number): string => {
+      return tokens[idx].content;
+    },
+    
+    // Strip <p> wrapper around code-only paragraphs
+    paragraph_open: (tokens: any[], idx: number, options: any, self: any): string => {
+      const contentToken = tokens[idx + 1];
+      const isSingleCode = contentToken &&
+                          contentToken.type === 'inline' &&
+                          contentToken.children &&
+                          contentToken.children.length === 1 &&
+                          contentToken.children[0].type === 'code_inline';
+
+      if (isSingleCode) return '';
+      return self.renderToken(tokens, idx, options);
+    },
+    
+    paragraph_close: (tokens: any[], idx: number, options: any, self: any): string => {
+      const contentToken = tokens[idx - 1];
+      const isSingleCode = contentToken &&
+                          contentToken.type === 'inline' &&
+                          contentToken.children &&
+                          contentToken.children.length === 1 &&
+                          contentToken.children[0].type === 'code_inline';
+
+      if (isSingleCode) return '';
+      return self.renderToken(tokens, idx, options);
+    }
+  };
+  
+  // Create markdown options
+  // Force type assertion to satisfy TypeScript while matching runtime structure expected by apidoc-light
+  const markdownOptions = {
     config: {
       breaks: true,
       html: true,
     },
-    // Define rules as an object with functions directly
-    rules: {
-      // Override `code_inline` (for `inline code`)
-      code_inline: function(tokens: any[], idx: number): string {
-        return tokens[idx].content;
-      },
-      // Strip <p> wrapper around code-only paragraphs
-      paragraph_open: function(tokens: any[], idx: number, options: any, self: any): string {
-        const contentToken = tokens[idx + 1];
-        const isSingleCode = contentToken &&
-                            contentToken.type === 'inline' &&
-                            contentToken.children &&
-                            contentToken.children.length === 1 &&
-                            contentToken.children[0].type === 'code_inline';
-
-        if (isSingleCode) return '';
-        return self.renderToken(tokens, idx, options);
-      },
-      paragraph_close: function(tokens: any[], idx: number, options: any, self: any): string {
-        const contentToken = tokens[idx - 1];
-        const isSingleCode = contentToken &&
-                            contentToken.type === 'inline' &&
-                            contentToken.children &&
-                            contentToken.children.length === 1 &&
-                            contentToken.children[0].type === 'code_inline';
-
-        if (isSingleCode) return '';
-        return self.renderToken(tokens, idx, options);
-      }
-    },
-    plugins: [
-      // Add any plugins if needed
-    ]
-  };
+    plugins: [],
+    rules: rules
+  } as unknown as MarkdownOptions;
   
+  // Create the doc using our custom markdown options
   const doc = createDoc({ 
     ...options, 
     src: options.input,
-    markdown: markdownOpts
+    markdown: markdownOptions
   });
   
   return {
