@@ -44,7 +44,7 @@ ___
 <% }) // foreach parameter -%>
 <% }) // foreach header fields -%>
 <% } // if parameters -%>
-<% if (sub.header && sub.header.examples && sub.header.examples.length) { -%>
+<% if (sub.header && sub.header.examples && Array.isArray(sub.header.examples) && sub.header.examples.length > 0) { -%>
 
 ### Header examples
 
@@ -119,7 +119,7 @@ _Allowed values: <%- body.allowedValues %>_<% } -%> |
 ```
 <% }) // foreach body example -%>
 <% } // if body.examples -%>
-<% if (sub.examples && sub.examples.length) { -%>
+<% if (sub.examples && Array.isArray(sub.examples) && sub.examples.length > 0) { -%>
 
 ### Examples
 
@@ -132,7 +132,7 @@ _Allowed values: <%- body.allowedValues %>_<% } -%> |
 
 <% }) // foreach example -%>
 <% } // if example -%>
-<% if (sub.parameter && sub.parameter.examples && sub.parameter.examples.length) { -%>
+<% if (sub.parameter && sub.parameter.examples && Array.isArray(sub.parameter.examples) && sub.parameter.examples.length > 0) { -%>
 
 ### Parameters examples
 
@@ -164,7 +164,7 @@ _Allowed values: <%- param.allowedValues %>_<% } -%> |
 <% }) // foreach reponses -%>
 <% }) // foreach field -%>
 <% } // if success.fields -%>
-<% if (sub.success && sub.success.examples && sub.success.examples.length) { -%>
+<% if (sub.success && sub.success.examples && Array.isArray(sub.success.examples) && sub.success.examples.length > 0) { -%>
 
 ### Success response example
 <% sub.success.examples.forEach(example => { -%>
@@ -196,7 +196,7 @@ _Allowed values: <%- param.allowedValues %>_<% } -%> |
 <% }) // foreach errors -%>
 <% }) // foreach field -%>
 <% } // if error.fields -%>
-<% if (sub.error && sub.error.examples && sub.error.examples.length) { -%>
+<% if (sub.error && sub.error.examples && Array.isArray(sub.error.examples) && sub.error.examples.length > 0) { -%>
 
 ### Error response example
 <% sub.error.examples.forEach(example => { -%>

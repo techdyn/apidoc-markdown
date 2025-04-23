@@ -60,6 +60,21 @@ const cli = yargs
     type: 'boolean',
     default: false
   })
+  .option('tocFile', {
+    describe: 'Generate a table of contents file in multi mode.',
+    type: 'boolean',
+    default: false
+  })
+  .option('apidocJsonPath', {
+    describe: 'Path to the apidoc.json configuration file (defaults to "apidoc.json" in current directory).',
+    type: 'string',
+    default: 'apidoc.json'
+  })
+  .option('useOrderPrefix', {
+    describe: 'Prefix filename with order number in multi mode.',
+    type: 'boolean',
+    default: false
+  })
 
   //
   // Other apiDoc options
@@ -166,7 +181,7 @@ const cli = yargs
 
   .help('h')
   .alias('h', 'help')
-  .epilog('apidoc-markdown - https://github.com/rigwild/apidoc-markdown')
+  .epilog('apidoc-markdown - https://github.com/techdyn/apidoc-markdown')
 
   // @ts-ignore
   .middleware((argv: ConfigurationObjectCLI) => {

@@ -7,10 +7,12 @@
 
 📝 Generate a Simple and Portable Markdown documentation for your API
 
-[![Node.js CI](https://github.com/rigwild/apidoc-markdown/workflows/Node.js%20CI/badge.svg)](https://github.com/rigwild/apidoc-markdown/actions)
+[![Node.js CI](https://github.com/techdyn/apidoc-markdown/workflows/Node.js%20CI/badge.svg)](https://github.com/techdyn/apidoc-markdown/actions)
 [![npm package](https://img.shields.io/npm/v/apidoc-markdown.svg?logo=npm)](https://www.npmjs.com/package/apidoc-markdown)
 [![npm downloads](https://img.shields.io/npm/dw/apidoc-markdown)](https://www.npmjs.com/package/apidoc-markdown)
 [![license](https://img.shields.io/npm/l/apidoc-markdown?color=blue)](./LICENSE)
+
+> **This is a fork of [rigwild/apidoc-markdown](https://github.com/rigwild/apidoc-markdown).**
 
 </div>
 
@@ -60,25 +62,28 @@ pnpm install apidoc-markdown
 
 Then, generate your documentation using your newly added command `apidoc-markdown` or [programmatically](#programmatic-usage-API).
 
-**Note**: Node.js v14+ minimum is required. `apidoc-markdown` uses [`apidoc-light`](https://github.com/rigwild/apidoc-light) internally.
+**Note**: Node.js v14+ minimum is required. `apidoc-markdown` uses [`apidoc-light`](https://github.com/techdyn/apidoc-light) internally.
 
 ## CLI usage
 
 ```
 Generate a Simple and Portable Markdown documentation for your API.
-Usage: apidoc-markdown -i <path> -o <output_file> [-t <template_name>] [--multi] [--createPath] [--prepend <file_path>]
+Usage: apidoc-markdown -i <path> -o <output_file> [-t <template_name>] [--multi] [--createPath] [--prepend <file_path>] [--tocFile] [--apidocJsonPath <path>] [--useOrderPrefix]
 
 Options:
-      --version     Show version number                                                                                            [boolean]
-  -i, --input       Input source files path                                                             [string] [required] [default: "src"]
-  -o, --output      Output file or directory to write output to.                                                         [string] [required]
-  -t, --template    Name of the template to be used (`default`, `bitbucket`) or path to an EJS template file.  [string] [default: "default"]
-      --header      Path to file content to add at the top of the documentation.                                                    [string]
-      --footer      Path to file content to add at the bottom of the documentation.                                                 [string]
-      --prepend     Path to file content to add before route groups documentation.                                                  [string]
-      --multi       Output one file per group to the `output` directory.                                          [boolean] [default: false]
-      --createPath  Recursively create directory arborescence to the `output` directory.                          [boolean] [default: false]
-  -h, --help        Show help                                                                                                      [boolean]
+      --version         Show version number                                                                                        [boolean]
+  -i, --input           Input source files path                                                         [string] [required] [default: "src"]
+  -o, --output          Output file or directory to write output to.                                                     [string] [required]
+  -t, --template        Name of the template to be used (`default`, `bitbucket`) or path to an EJS template file.  [string] [default: "default"]
+      --header          Path to file content to add at the top of the documentation.                                                [string]
+      --footer          Path to file content to add at the bottom of the documentation.                                             [string]
+      --prepend         Path to file content to add before route groups documentation.                                              [string]
+      --multi           Output one file per group to the `output` directory.                                      [boolean] [default: false]
+      --createPath      Recursively create directory arborescence to the `output` directory.                      [boolean] [default: false]
+      --tocFile         Generate a table of contents file (README.md) in multi mode.                              [boolean] [default: false]
+      --apidocJsonPath  Path to the apidoc.json configuration file.                                   [string] [default: "apidoc.json"]
+      --useOrderPrefix  Prefix filenames with order numbers in multi mode.                                       [boolean] [default: false]
+  -h, --help            Show help                                                                                                  [boolean]
 
 Examples:
   apidoc-markdown -i src -o doc.md                           Generate from `src` source files to `doc.md`
@@ -87,7 +92,7 @@ Examples:
   apidoc-markdown -i src -o doc.md -t my_custom_template.md  Generate from `src` source files to `doc.md` using a provided template file
   apidoc-markdown -i src -o doc --multi                      Generate from `src` source files to `doc/<group>.md`
 
-apidoc-markdown - https://github.com/rigwild/apidoc-markdown
+apidoc-markdown - https://github.com/techdyn/apidoc-markdown
 ```
 
 ### Examples
@@ -124,6 +129,24 @@ Generate documentation with one file per group (See [`./example/multi`](./exampl
 
 ```
 apidoc-markdown -i src -o doc --multi
+```
+
+Generate documentation with one file per group and a table of contents file (README.md):
+
+```
+apidoc-markdown -i src -o doc --multi --tocFile
+```
+
+Generate multi-file documentation with order prefixes in filenames (based on apidoc.json order):
+
+```
+apidoc-markdown -i src -o doc --multi --useOrderPrefix
+```
+
+Use a custom apidoc.json configuration file:
+
+```
+apidoc-markdown -i src -o doc --apidocJsonPath path/to/custom-apidoc.json
 ```
 
 ### Quick and easy project integration
@@ -186,7 +209,16 @@ const documentation: Doc = await generateMarkdownFileSystem({
   multi: false,
 
   /** Optional: Recursively create directory arborescence to the `output` directory */
-  createPath: true
+  createPath: true,
+  
+  /** Optional: Generate a table of contents file (README.md) in multi mode */
+  tocFile: false,
+  
+  /** Optional: Path to the apidoc.json configuration file */
+  apidocJsonPath: 'path/to/custom-apidoc.json',
+  
+  /** Optional: Prefix filenames with order numbers in multi mode */
+  useOrderPrefix: false
 })
 
 // Output
@@ -273,18 +305,90 @@ Add it like this:
 
 You can choose the order in which the documentation groups gets generated by adding an `order` key in `apidoc.json`. [See example `apidoc.json`](./test/_testFiles/input/apidoc.json#L15-L22) and [generated example output](./example/basic/example.md).
 
-**Note:** This is only useful when generating the documentation to a single output file (`multi` is `false`).
+This order is respected in several ways:
+- In single-file mode, it determines the order of groups in the documentation
+- In multi-file mode with `--tocFile`, it determines the order of links in the table of contents
+- In multi-file mode with `--useOrderPrefix`, it determines the numeric prefixes added to filenames
 
-## Contribute
+Example `order` in apidoc.json:
+```json
+{
+  "order": [
+    "User",
+    "Admin",
+    "Account",
+    "Error"
+  ]
+}
+```
 
-Share your custom templates in [this discussion!](https://github.com/rigwild/apidoc-markdown/discussions/24)
+When using `--useOrderPrefix`, files would be generated as:
+- 01_User.md
+- 02_Admin.md
+- 03_Account.md
+- 04_Error.md
+- etc.
 
-Suggest any feature you would like by creating an [issue](https://github.com/rigwild/apidoc-markdown/issues) or a [pull request](https://github.com/rigwild/apidoc-markdown/pulls).
+This makes it easy to maintain a logical order when browsing the generated files.
 
-When reporting bugs, please fill the issue template correctly with as much info as possible to help me debug and understand what's happening.
+## New Features
 
-⭐ Star the project to help it grow! 😄
+### Table of Contents Generation
+
+When using multi-file mode (`--multi`), you can now generate a table of contents file with the `--tocFile` option. This creates a README.md file in the output directory that links to all the generated documentation files, making navigation easier.
+
+```bash
+apidoc-markdown -i src -o docs --multi --tocFile
+```
+
+### Custom apidoc.json Path
+
+Specify a custom path to your apidoc.json configuration file using the `--apidocJsonPath` option:
+
+```bash
+apidoc-markdown -i src -o docs --apidocJsonPath ./configs/custom-apidoc.json
+```
+
+### Order-based Filename Prefixes
+
+In multi-file mode, you can prefix filenames with order numbers based on the `order` array in your apidoc.json file using the `--useOrderPrefix` option:
+
+```bash
+apidoc-markdown -i src -o docs --multi --useOrderPrefix
+```
+
+This makes it easier to browse the documentation files in a logical order.
+
+### Improved Formatting
+
+- Titles with underscores are now properly displayed with spaces (e.g., "User_-_Reports" is displayed as "User - Reports")
+- Code blocks with backticks now render properly without paragraph wrappers
 
 ## License
 
-[The MIT license](./LICENSE)
+```
+MIT License
+
+Copyright (c) 2014-2019 Martin Jonsson <martin.jonsson@gmail.com> (https://github.com/martinj)
+Copyright (c) 2019 rigwild <me@rigwild.dev> (https://github.com/rigwild)
+
+Modified 2025 by Brandon Stonebridge
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+```

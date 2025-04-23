@@ -10,7 +10,9 @@ import {
   mkdirp,
   pathExists,
   templateUtils,
-  unique
+  unique,
+  loadApidocJson,
+  formatTitle
 } from './utils'
 import { ConfigurationObject, ConfigurationObjectCLI } from './types'
 
@@ -23,7 +25,6 @@ import { ConfigurationObject, ConfigurationObjectCLI } from './types'
 export const generate = async (
   options: Omit<ConfigurationObject, 'template'> & { ejsCompiler: ejs.AsyncTemplateFunction }
 ) => {
-  // const { apiData, projectData, ejsCompiler } = await loadApiDocProject({ apiDocPath, template, prepend })
   // Define template data
   let apiByGroupAndName: any[]
 
@@ -31,7 +32,7 @@ export const generate = async (
   const elementsWithoutTitle = options.apiDocApiData.filter(x => !x.title)
   if (elementsWithoutTitle.length > 0)
     throw new Error(
-      'Missing `title` key in one or more elements. Run with `--debug` to generate `api_data.json` file to try to find what is happening (see https://github.com/rigwild/apidoc-markdown/issues/26).\n' +
+      'Missing `title` key in one or more elements. Run with `--debug` to generate `api_data.json` file to try to find what is happening (see https://github.com/techdyn/apidoc-markdown/issues/26).\n' +
         `Elements without \`title\` key: ${JSON.stringify(elementsWithoutTitle, null, 2)}`
     )
 
@@ -147,6 +148,17 @@ export const generateMarkdownFileSystem = async (options: ConfigurationObjectCLI
     throw new Error(`The \`cli.output\` path does not exist or is not readable. Path: ${outputPath}`)
   }
 
+  // Try to load the apidoc.json if a custom path is provided
+  if (options.apidocJsonPath) {
+    const customConfig = await loadApidocJson(options.apidocJsonPath);
+    if (customConfig) {
+      // If we loaded a custom config, set it as the config option path for apidoc
+      const tempConfigPath = path.join(outputPath, '_temp_apidoc.json');
+      await fs.writeFile(tempConfigPath, JSON.stringify(customConfig, null, 2));
+      options.config = tempConfigPath;
+    }
+  }
+  
   const { apiDocProjectData, apiDocApiData } = createDocOrThrow(options)
 
   // Check header, footer and prepend file path exist
@@ -192,13 +204,92 @@ export const generateMarkdownFileSystem = async (options: ConfigurationObjectCLI
       )
     }
 
-    // Multi file documentation generation
-    return Promise.all(
-      documentation.map(async aDoc => {
-        const filePath = path.resolve(outputPath, `${aDoc.name}.md`)
-        await fs.writeFile(filePath, aDoc.content)
-        return { outputFile: filePath, content: aDoc.content }
+    // Multi file documentation generation with optional order prefixing
+    const projectOrder = apiDocProjectData.order || [];
+    const results = await Promise.all(
+      documentation.map(async (aDoc, index) => {
+        let fileName = aDoc.name;
+        
+        // Add order prefix if requested and the name is in the order array
+        if (options.useOrderPrefix) {
+          // Find the position in the order array (case-insensitive)
+          const orderIndex = projectOrder.findIndex(
+            (orderItem: string) => orderItem.toLowerCase() === aDoc.name.toLowerCase()
+          );
+          
+          // If found in order array, use that position, otherwise use the document's position
+          const prefix = orderIndex !== -1 ? orderIndex + 1 : index + 1;
+          fileName = `${prefix.toString().padStart(2, '0')}_${aDoc.name}`;
+        }
+        
+        const filePath = path.resolve(outputPath, `${fileName}.md`);
+        await fs.writeFile(filePath, aDoc.content);
+        
+        return { 
+          outputFile: filePath, 
+          content: aDoc.content,
+          name: aDoc.name,
+          fileName: fileName
+        };
       })
-    )
+    );
+    
+    // Generate table of contents file if requested
+    if (options.tocFile) {
+      const tocPath = path.resolve(outputPath, 'README.md');
+      let tocContent = `# ${apiDocProjectData.name || 'API'} Documentation\n\n`;
+      
+      if (apiDocProjectData.description) {
+        tocContent += `${apiDocProjectData.description}\n\n`;
+      }
+      
+      tocContent += '## Table of Contents\n\n';
+      
+      // Sort results according to project order if available
+      let sortedResults = [...results];
+      if (projectOrder.length > 0) {
+        sortedResults.sort((a, b) => {
+          const aIndex = projectOrder.findIndex(
+            (item: string) => item.toLowerCase() === a.name.toLowerCase()
+          );
+          const bIndex = projectOrder.findIndex(
+            (item: string) => item.toLowerCase() === b.name.toLowerCase()
+          );
+          
+          // If both items are in the order array, sort by their position
+          if (aIndex !== -1 && bIndex !== -1) {
+            return aIndex - bIndex;
+          }
+          // If only a is in the order array, a comes first
+          if (aIndex !== -1) {
+            return -1;
+          }
+          // If only b is in the order array, b comes first
+          if (bIndex !== -1) {
+            return 1;
+          }
+          // If neither is in the order array, maintain their original order
+          return 0;
+        });
+      }
+      
+      // Generate TOC entries
+      sortedResults.forEach(doc => {
+        const formattedName = formatTitle(doc.name);
+        tocContent += `- [${formattedName}](./${doc.fileName}.md)\n`;
+      });
+      
+      await fs.writeFile(tocPath, tocContent);
+      
+      // Add TOC file to results
+      results.push({
+        outputFile: tocPath,
+        content: tocContent,
+        name: 'README',
+        fileName: 'README'
+      });
+    }
+    
+    return results;
   }
 }

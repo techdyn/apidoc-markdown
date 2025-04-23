@@ -1,13 +1,13 @@
 {
   "name": "apidoc-markdown",
-  "version": "7.3.2",
+  "version": "7.3.3",
   "description": "📝 Generate a Simple and Portable Markdown documentation for your API",
   "license": "MIT",
-  "repository": "rigwild/apidoc-markdown",
+  "repository": "techdyn/apidoc-markdown",
   "author": {
-    "name": "rigwild",
-    "email": "me@rigwild.dev",
-    "url": "https://rigwild.dev"
+    "name": "Brandon Stonebridge",
+    "email": "brandon@techster.co.uk",
+    "url": "https://techster.co.uk"
   },
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

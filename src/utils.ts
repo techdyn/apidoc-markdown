@@ -75,8 +75,35 @@ export const loadFromCliParamOrApiDocProject = async (
 export const isInTemplatesDir = (name: string) => fs.readdir(TEMPLATES_PATH).then(files => files.includes(`${name}.md`))
 
 /**
+ * Load the apidoc.json file from a specified path
+ * @param apidocJsonPath Path to the apidoc.json file
+ * @returns The content of the apidoc.json file or null if not found
+ */
+export const loadApidocJson = async (apidocJsonPath: string): Promise<Record<string, any> | null> => {
+  try {
+    if (await pathExists(apidocJsonPath, false)) {
+      const content = await fs.readFile(apidocJsonPath, 'utf-8');
+      return JSON.parse(content);
+    }
+    return null;
+  } catch (err) {
+    console.error(`Error loading apidoc.json from ${apidocJsonPath}:`, err);
+    return null;
+  }
+};
+
+/**
+ * Format a title by replacing underscores with spaces
+ * @param title The title to format
+ * @returns The formatted title
+ */
+export const formatTitle = (title: string): string => {
+  return title.replace(/_/g, ' ');
+};
+
+/**
  * Invoke apidoc to get the documentation
- * @param input Input source files path
+ * @param options CLI configuration options
  * @throws apiDoc parsing error
  */
 export const createDocOrThrow = (
@@ -112,6 +139,18 @@ export const createDocOrThrow = (
 
       if (isSingleCode) return '';
       return self.renderToken(tokens, idx, options);
+    },
+    
+    // Remove <p> tags from any backtick content
+    html_block: (tokens: any[], idx: number): string => {
+      const content = tokens[idx].content;
+      // If the content contains <p><code> patterns, clean them up
+      if (content.includes('<p><code>')) {
+        return content
+          .replace(/<p><code>/g, '<code>')
+          .replace(/<\/code><\/p>/g, '</code>');
+      }
+      return content;
     }
   };
   
@@ -135,7 +174,15 @@ export const createDocOrThrow = (
   
   return {
     apiDocProjectData: doc.project,
-    apiDocApiData: Object.values<any>(doc.data).filter(x => x.type)
+    apiDocApiData: Object.values<any>(doc.data)
+      .filter(x => x.type)
+      .map(item => {
+        // Format titles by replacing underscores with spaces
+        if (item.title) {
+          item.title = formatTitle(item.title);
+        }
+        return item;
+      })
   }
 }
 

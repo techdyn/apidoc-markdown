@@ -56,6 +56,15 @@ export declare type ConfigurationObjectCLI = {
 
   /** Treat warnings as error and exit with error code. */
   warnError?: boolean
+
+  /** Generate a table of contents file in multi mode */
+  tocFile?: boolean
+
+  /** Path to the apidoc.json configuration file (defaults to "apidoc.json" in current directory) */
+  apidocJsonPath?: string
+
+  /** Prefix filename with order number in multi mode */
+  useOrderPrefix?: boolean
 } & Pick<
   DocOptions,
   | 'config'
