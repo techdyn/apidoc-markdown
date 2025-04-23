@@ -89,39 +89,44 @@ export const createDocOrThrow = (
         breaks: true,
         html: true,
       },
-      rules: {
-        // // Override `fence` (for ``` blocks)
-        // fence: function (tokens, idx) {
-        //   return tokens[idx].content + '\n';
-        // },
+      rules: [
         // Override `code_inline` (for `inline code`)
-        code_inline: function (tokens, idx) {
-          return tokens[idx].content;
+        {
+          name: 'code_inline',
+          render: function(tokens: any[], idx: number): string {
+            return tokens[idx].content;
+          }
         },
         // Strip <p> wrapper around code-only paragraphs
-        paragraph_open: function (tokens, idx, options, self) {
-          const contentToken = tokens[idx + 1];
-          const isSingleCode = contentToken &&
-                               contentToken.type === 'inline' &&
-                               contentToken.children &&
-                               contentToken.children.length === 1 &&
-                               contentToken.children[0].type === 'code_inline';
+        {
+          name: 'paragraph_open',
+          render: function(tokens: any[], idx: number, options: any, self: any): string {
+            const contentToken = tokens[idx + 1];
+            const isSingleCode = contentToken &&
+                                contentToken.type === 'inline' &&
+                                contentToken.children &&
+                                contentToken.children.length === 1 &&
+                                contentToken.children[0].type === 'code_inline';
 
-          if (isSingleCode) return '';
-          return self.renderToken(tokens, idx, options);
+            if (isSingleCode) return '';
+            return self.renderToken(tokens, idx, options);
+          }
         },
-        paragraph_close: function (tokens, idx, options, self) {
-          const contentToken = tokens[idx - 1];
-          const isSingleCode = contentToken &&
-                               contentToken.type === 'inline' &&
-                               contentToken.children &&
-                               contentToken.children.length === 1 &&
-                               contentToken.children[0].type === 'code_inline';
+        {
+          name: 'paragraph_close',
+          render: function(tokens: any[], idx: number, options: any, self: any): string {
+            const contentToken = tokens[idx - 1];
+            const isSingleCode = contentToken &&
+                                contentToken.type === 'inline' &&
+                                contentToken.children &&
+                                contentToken.children.length === 1 &&
+                                contentToken.children[0].type === 'code_inline';
 
-          if (isSingleCode) return '';
-          return self.renderToken(tokens, idx, options);
+            if (isSingleCode) return '';
+            return self.renderToken(tokens, idx, options);
+          }
         }
-      },
+      ],
       plugins: [
         // require('markdown-it-plugin'),
         // [require('markdown-it-anchor'), { option: 'value' }]
