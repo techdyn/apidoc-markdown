@@ -91,7 +91,7 @@ _Size range: <%- query.size %>_<br><% } -%>
 _Allowed values: <%- query.allowedValues %>_<% } -%> |
 <% }) // foreach query -%>
 <% } // if query -%>
-<% if (sub.body && Array.isArray(sub.body)) { -%>
+<% if (sub.body && Array.isArray(sub.body) && sub.body.length > 0) { -%>
 
 ### Request Body
 
@@ -107,12 +107,12 @@ _Size range: <%- body.size %>_<br><% } -%>
 _Allowed values: <%- body.allowedValues %>_<% } -%> |
 <% }) // foreach body -%>
 <% } // if body -%>
-<% if (sub.body && sub.body.examples && sub.body.examples.length) { -%>
+<% if (sub.body && sub.body.examples && Array.isArray(sub.body.examples) && sub.body.examples.length > 0) { -%>
 
-### Request body example
+### Body example
 <% sub.body.examples.forEach(example => { -%>
 
-#### Request body example - `<%= example.title %>`
+#### Body example - `<%= example.title %>`
 
 ```<%= example.type %>
 <%- example.content %>
