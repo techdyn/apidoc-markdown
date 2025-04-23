@@ -129,19 +129,23 @@ export const generateMarkdownFileSystem = async (options: ConfigurationObjectCLI
   // Check the output path exists (only parent directory if unique file)
   if (!options.output) throw new Error('`cli.output` is required but was not provided.')
 
-  // Recursively create directory arborescence if cli option is true or if using multi-file mode
-  if (options.createPath || options.multi)
-    await mkdirp(options.output.toLowerCase().endsWith('.md') ? path.dirname(options.output) : options.output)
+  // Check if output is a directory in non-multi mode
+  const isOutputDirectory = !options.output.toLowerCase().endsWith('.md') || (await pathExists(options.output) && (await fs.stat(options.output)).isDirectory())
+  if (!options.multi && isOutputDirectory) {
+    throw new Error(`The \`cli.output\` must be a file in single-file mode, but a directory was provided. Please specify a file path or use multi-file mode with '-m' flag. Path: ${options.output}`)
+  }
 
-  // If output is a file path, check if the parent directory exists
-  // If output is a directory path, check if that directory exists
+  // Determine the output path and ensure parent directory exists
   const outputPath = options.output.toLowerCase().endsWith('.md') 
     ? path.dirname(path.resolve('.', options.output))
     : path.resolve('.', options.output)
   
-  // Only check if the path exists when we're not creating it
-  if (!options.createPath && !options.multi && !(await pathExists(outputPath)))
+  // Create the directory if it doesn't exist or if createPath is true
+  if (options.createPath || options.multi || !(await pathExists(outputPath))) {
+    await mkdirp(outputPath)
+  } else if (!options.createPath && !options.multi && !(await pathExists(outputPath))) {
     throw new Error(`The \`cli.output\` path does not exist or is not readable. Path: ${outputPath}`)
+  }
 
   const { apiDocProjectData, apiDocApiData } = createDocOrThrow(options)
 
