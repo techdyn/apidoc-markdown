@@ -35,14 +35,11 @@
     "prepare": "npm run build"
   },
   "dependencies": {
-    "apidoc-light": "^0.54.0",
+    "apidoc-light": "https://github.com/techdyn/apidoc-light.git",
     "ejs": "^3.1.9",
     "semver": "^7.5.4",
     "update-notifier": "^7.0.0",
     "yargs": "^17.7.2"
-  },
-  "resolutions": {
-    "apidoc-light": "https://github.com/techdyn/apidoc-light.git"
   },
   "devDependencies": {
     "@types/ejs": "^3.1.5",
